@@ -145,8 +145,9 @@ npm run commitlint       # Validate the latest commit message
 - Uses Cloudflare Cache API for GET requests (200 OK only)
 - Fallback mutable cache TTL controlled by `CACHE_DURATION` config
 - Skips cache for: Git operations, Docker operations, AI inference requests
-- Range requests: First checks for range-specific cache, falls back to full
-  content cache
+- Range requests: Only reuse range-aware cache responses (206/416); otherwise
+  bypass the upstream fetch cache. If-Range requests go directly to upstream.
+  Range responses are not written to the Cache API.
 
 ### Special Platform Handling
 

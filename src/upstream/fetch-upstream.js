@@ -76,6 +76,13 @@ function createFetchOptions({
   }
 
   const requestHeaders = /** @type {Headers} */ (fetchOptions.headers);
+  const rangeHeader = request.headers.get('Range');
+
+  // A cache fill may fetch the entire object instead of preserving the requested range.
+  // Resume requests must reach the upstream with their byte offsets intact.
+  if (rangeHeader) {
+    fetchOptions.cache = 'no-store';
+  }
 
   if (shouldPassthroughRequest) {
     for (const [key, value] of request.headers.entries()) {
@@ -99,7 +106,7 @@ function createFetchOptions({
     return { fetchOptions, requestHeaders };
   }
 
-  if (!cachePolicy || cachePolicy.allowFetchCache) {
+  if (!rangeHeader && (!cachePolicy || cachePolicy.allowFetchCache)) {
     Object.assign(fetchOptions, {
       cf: {
         http3: true,
@@ -123,13 +130,16 @@ function createFetchOptions({
     requestHeaders.set('Authorization', authorization);
   }
 
-  const rangeHeader = request.headers.get('Range');
   if (MEDIA_FILE_PATTERN.test(targetUrl) || rangeHeader) {
     requestHeaders.set('Accept-Encoding', 'identity');
   }
 
   if (rangeHeader) {
     requestHeaders.set('Range', rangeHeader);
+    const ifRange = request.headers.get('If-Range');
+    if (ifRange) {
+      requestHeaders.set('If-Range', ifRange);
+    }
   }
 
   return { fetchOptions, requestHeaders };

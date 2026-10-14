@@ -220,7 +220,7 @@ describe('Worker regression coverage', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('reuses cached full content for range requests when a ranged entry is absent', async () => {
+  it('fetches the requested range upstream when a ranged cache entry is absent', async () => {
     cacheDefault.match.mockResolvedValueOnce(null).mockResolvedValueOnce(
       new Response('full-body', {
         status: 200,
@@ -228,9 +228,9 @@ describe('Worker regression coverage', () => {
       })
     );
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('should-not-run', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' }
+      new Response('part', {
+        status: 206,
+        headers: { 'Content-Type': 'text/plain', 'Content-Range': 'bytes 0-3/9' }
       })
     );
 
@@ -243,10 +243,11 @@ describe('Worker regression coverage', () => {
     );
     const metrics = JSON.parse(response.headers.get('X-Performance-Metrics') || '{}');
 
-    expect(response.status).toBe(200);
-    expect(await response.text()).toBe('full-body');
-    expect(metrics).toHaveProperty('cache_hit_full_content');
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(response.status).toBe(206);
+    expect(await response.text()).toBe('part');
+    expect(metrics).not.toHaveProperty('cache_hit_full_content');
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(cacheDefault.match).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to upstream fetch when cache lookup throws', async () => {
@@ -556,7 +557,7 @@ describe('Worker regression coverage', () => {
     expect(warnSpy).toHaveBeenCalledWith('Token fetch failed:', expect.any(Error));
   });
 
-  it('returns a ranged response after caching the full upstream body', async () => {
+  it('preserves upstream full responses without caching or synthesizing a range', async () => {
     cacheDefault.match
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null)
@@ -583,8 +584,11 @@ describe('Worker regression coverage', () => {
     );
     const metrics = JSON.parse(response.headers.get('X-Performance-Metrics') || '{}');
 
-    expect(response.status).toBe(206);
-    expect(metrics).toHaveProperty('range_cache_hit_after_full_cache');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('xyz123');
+    expect(cacheDefault.put).not.toHaveBeenCalled();
+    expect(cacheDefault.match).toHaveBeenCalledTimes(1);
+    expect(metrics).not.toHaveProperty('range_cache_hit_after_full_cache');
   });
 
   it('warns when cache writes fail without waitUntil support', async () => {
@@ -609,7 +613,7 @@ describe('Worker regression coverage', () => {
     expect(warnSpy).toHaveBeenCalledWith('Cache put failed:', expect.any(Error));
   });
 
-  it('warns when post-store cache lookups fail for range requests', async () => {
+  it('does not perform post-store cache lookups for range requests', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     cacheDefault.match
       .mockResolvedValueOnce(null)
@@ -631,7 +635,10 @@ describe('Worker regression coverage', () => {
     );
 
     expect(response.status).toBe(200);
-    expect(warnSpy).toHaveBeenCalledWith('Cache put/match failed:', expect.any(Error));
+    expect(await response.text()).toBe('abcdef');
+    expect(cacheDefault.put).not.toHaveBeenCalled();
+    expect(cacheDefault.match).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('copies upstream content length from non-standard header objects when needed', async () => {

@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Tests for Range Request Caching Strategy
  *
- * This test suite validates the new caching strategy that:
+ * This test suite checks the caching strategy that:
  * 1. Only caches 200 responses (not 206)
- * 2. Handles Range requests by caching full content first
+ * 2. Preserves Range requests when cached content cannot satisfy them
  * 3. Lets Cloudflare edge serve 206 responses from cached 200 content
  * 4. Avoids compression for media files to ensure proper Range support
  */

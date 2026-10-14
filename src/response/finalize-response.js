@@ -43,8 +43,17 @@ import { addSecurityHeaders, createErrorResponse } from '../utils/security.js';
  * }} options
  * @returns {Promise<Response>} Final error response.
  */
-async function finalizeErrorResponse({ requestContext, response, responseGeneratedLocally }) {
-  if (responseGeneratedLocally || response.ok || response.status === 206) {
+async function finalizeErrorResponse({
+  request,
+  requestContext,
+  response,
+  responseGeneratedLocally
+}) {
+  if (
+    responseGeneratedLocally ||
+    response.ok ||
+    (request.headers.has('Range') && response.status === 416)
+  ) {
     return response;
   }
 
@@ -118,7 +127,6 @@ async function finalizeSuccessfulResponse({
   ctx,
   effectivePath,
   hasSensitiveHeaders,
-  monitor,
   platform,
   request,
   requestContext,
@@ -196,7 +204,7 @@ async function finalizeSuccessfulResponse({
     addSecurityHeaders(headers);
   }
 
-  let finalizedResponse = new Response(responseBody, {
+  const finalizedResponse = new Response(responseBody, {
     status: response.status,
     headers
   });
@@ -205,18 +213,11 @@ async function finalizeSuccessfulResponse({
     cache &&
     cachePolicy.allowCacheApi &&
     request.method === 'GET' &&
+    !request.headers.has('Range') &&
     finalizedResponse.ok &&
     finalizedResponse.status === 200
   ) {
-    const rangeHeader = request.headers.get('Range');
-    const cacheKey = rangeHeader
-      ? new Request(cacheTargetUrl, {
-          method: 'GET',
-          headers: new Headers(
-            [...request.headers.entries()].filter(([key]) => key.toLowerCase() !== 'range')
-          )
-        })
-      : new Request(cacheTargetUrl, { method: 'GET' });
+    const cacheKey = new Request(cacheTargetUrl, { method: 'GET' });
 
     try {
       if (ctx && typeof ctx.waitUntil === 'function') {
@@ -225,19 +226,6 @@ async function finalizeSuccessfulResponse({
         cache.put(cacheKey, finalizedResponse.clone()).catch(error => {
           console.warn('Cache put failed:', error);
         });
-      }
-
-      if (rangeHeader && finalizedResponse.status === 200) {
-        const rangedResponse = await cache.match(
-          new Request(cacheTargetUrl, {
-            method: 'GET',
-            headers: request.headers
-          })
-        );
-        if (rangedResponse) {
-          monitor.mark('range_cache_hit_after_full_cache');
-          finalizedResponse = rangedResponse;
-        }
       }
     } catch (cacheError) {
       console.warn('Cache put/match failed:', cacheError);

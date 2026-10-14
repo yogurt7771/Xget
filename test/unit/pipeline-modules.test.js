@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('Pipeline modules', () => {
-  it('reuses cached full content for range requests through the cache helper', async () => {
+  it('does not retry range cache misses using a full-content cache key', async () => {
     const cache = {
       match: vi
         .fn()
@@ -41,8 +41,10 @@ describe('Pipeline modules', () => {
       requestContext: createRequestContext(request, {})
     });
 
-    expect(await response?.text()).toBe('full-body');
-    expect(markSpy).toHaveBeenCalledWith('cache_hit_full_content');
+    expect(response).toBeNull();
+    expect(cache.match).toHaveBeenCalledTimes(1);
+    expect(cache.match.mock.calls[0][0].headers.get('Range')).toBe('bytes=0-3');
+    expect(markSpy).not.toHaveBeenCalledWith('cache_hit_full_content');
   });
 
   it('retries upstream fetches through the transport helper before succeeding', async () => {

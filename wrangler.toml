@@ -2,7 +2,7 @@
 name = "xget"
 main = "src/index.js"
 compatibility_date = "2024-10-22"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "cache_option_enabled"]
 workers_dev = false
 
 [placement]

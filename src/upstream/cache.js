@@ -63,6 +63,7 @@ export async function tryReadCachedResponse({
   requestContext
 }) {
   const { isAI, isDocker, isGit, isGitLFS, isHF } = requestContext;
+  const rangeHeader = request.headers.get('Range');
 
   if (
     !cache ||
@@ -73,7 +74,8 @@ export async function tryReadCachedResponse({
     isDocker ||
     isAI ||
     isHF ||
-    hasSensitiveHeaders
+    hasSensitiveHeaders ||
+    (rangeHeader && request.headers.has('If-Range'))
   ) {
     return null;
   }
@@ -84,27 +86,16 @@ export async function tryReadCachedResponse({
       headers: request.headers
     });
     const cachedResponse = await cache.match(cacheKey);
-    if (cachedResponse) {
+    if (
+      cachedResponse &&
+      (!rangeHeader || cachedResponse.status === 206 || cachedResponse.status === 416)
+    ) {
       monitor.mark('cache_hit');
       return cachedResponse;
     }
 
-    const rangeHeader = request.headers.get('Range');
-    if (!rangeHeader) {
-      return null;
-    }
-
-    const fullContentKey = new Request(cacheTargetUrl, {
-      method: 'GET',
-      headers: new Headers(
-        [...request.headers.entries()].filter(([key]) => key.toLowerCase() !== 'range')
-      )
-    });
-    const fullCachedResponse = await cache.match(fullContentKey);
-    if (fullCachedResponse) {
-      monitor.mark('cache_hit_full_content');
-      return fullCachedResponse;
-    }
+    // Only the cache's range-aware match may serve a resume request. Falling back
+    // to a match without Range would return 200 and restart the client's download.
   } catch (cacheError) {
     console.warn('Cache API unavailable:', cacheError);
   }

@@ -15,6 +15,6 @@ const worker :Workerd.Worker = (
   ],
   # Match the compatibility_date in wrangler.toml
   compatibilityDate = "2024-10-22",
-  # Enable Node.js compatibility to match wrangler.toml
-  compatibilityFlags = ["nodejs_compat"],
+  # Match the compatibility flags in wrangler.toml
+  compatibilityFlags = ["nodejs_compat", "cache_option_enabled"],
 );
