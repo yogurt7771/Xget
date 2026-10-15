@@ -8,6 +8,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      placement_region:
+        description: Worker placement for regional throughput comparison
+        required: true
+        default: smart
+        type: choice
+        options:
+          - smart
+          - aws:ap-east-1
+          - aws:ap-northeast-1
+          - aws:ap-southeast-1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,7 +48,26 @@ jobs:
         run: npm install --global wrangler@${{ env.WRANGLER_VERSION }}
 
       - name: Deploy to Cloudflare Workers
+        # Apply placement only in this job; the repository configuration stays unchanged.
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: wrangler deploy
+          PLACEMENT_REGION: ${{ inputs.placement_region }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          region = os.environ.get("PLACEMENT_REGION", "")
+          allowed = {"", "smart", "aws:ap-east-1", "aws:ap-northeast-1", "aws:ap-southeast-1"}
+          if region not in allowed:
+              raise SystemExit("Unsupported placement region")
+          if region not in {"", "smart"}:
+              path = Path("wrangler.toml")
+              source = path.read_text()
+              original = '[placement]\nmode = "smart"'
+              if source.count(original) != 1:
+                  raise SystemExit("Expected exactly one Smart Placement configuration")
+              path.write_text(source.replace(original, f'[placement]\nregion = "{region}"'))
+          PY
+          wrangler deploy
