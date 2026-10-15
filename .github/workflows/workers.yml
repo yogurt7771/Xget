@@ -71,3 +71,19 @@ jobs:
               path.write_text(source.replace(original, f'[placement]\nregion = "{region}"'))
           PY
           wrangler deploy
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          account = os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          url = f"https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/xget/settings"
+          request = urllib.request.Request(url, headers={
+              "Authorization": "Bearer " + os.environ["CLOUDFLARE_API_TOKEN"]
+          })
+          with urllib.request.urlopen(request, timeout=30) as response:
+              data = json.load(response)
+          if not data.get("success"):
+              raise SystemExit("Unable to verify deployed placement settings")
+          print("Deployed placement:", json.dumps(data["result"].get("placement")))
+          PY
