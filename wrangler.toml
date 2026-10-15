@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat", "cache_option_enabled"]
 workers_dev = false
 
 [placement]
-mode = "smart"
+mode = "off"
 
 [observability]
 enabled = false
