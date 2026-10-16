@@ -1,12 +1,28 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "xget"
-main = "src/index.js"
+main = "src/region-router.js"
 compatibility_date = "2024-10-22"
 compatibility_flags = ["nodejs_compat", "cache_option_enabled"]
 workers_dev = false
 
-[placement]
-region = "aws:ap-east-1"
+[vars]
+ACTIVE_REGION = "hk"
+
+[[services]]
+binding = "XGET_HK"
+service = "xget-hk"
+
+[[services]]
+binding = "XGET_SG"
+service = "xget-sg"
+
+[[services]]
+binding = "XGET_JP"
+service = "xget-jp"
+
+[[services]]
+binding = "XGET_TW"
+service = "xget-tw"
 
 [observability]
 enabled = false

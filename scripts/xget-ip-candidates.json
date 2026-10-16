@@ -1,0 +1,66 @@
+{
+  "updated": "2026-10-16T06:43:04+00:00",
+  "note": "Refresh before auto benchmark. Regions missing from the live feed keep their local ips. Region labels do not guarantee ingress cities.",
+  "regions": {
+    "HK": {
+      "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "source": "Local xget.qyqq.wang trace measurements on 2026-10-15: HKG",
+      "ips": ["104.26.14.111", "172.67.74.177", "172.67.67.89"]
+    },
+    "SG": {
+      "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "source": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "ips": [
+        "198.41.223.110",
+        "162.159.9.209",
+        "162.159.2.42",
+        "108.162.195.19",
+        "162.159.11.2",
+        "162.159.10.207",
+        "173.245.58.199",
+        "172.64.35.87",
+        "108.162.192.57"
+      ],
+      "last_refresh_utc": "2026-10-16T06:43:04+00:00"
+    },
+    "JP": {
+      "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "source": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "ips": [
+        "162.159.38.118",
+        "172.64.229.156",
+        "162.159.39.16",
+        "108.162.198.70",
+        "172.64.230.154",
+        "172.64.231.160"
+      ],
+      "last_refresh_utc": "2026-10-16T06:43:04+00:00"
+    },
+    "TW": {
+      "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
+      "source": "https://www.sakamoto.blog/cloudflare-web-cdn-tpe/",
+      "note": "Historical TPE candidate only. Source explicitly withdrew guaranteed TPE routing in 2022. No currently verified Taiwan ingress is claimed.",
+      "ips": ["104.16.0.132"]
+    },
+    "GLOBAL_V6": {
+      "refresh_url": "https://raw.githubusercontent.com/ymyuuu/IPDB/refs/heads/main/BestCF/bestcfv6.txt",
+      "source": "https://raw.githubusercontent.com/ymyuuu/IPDB/refs/heads/main/BestCF/bestcfv6.txt",
+      "region_filter": null,
+      "version": 6,
+      "note": "IPv6 anycast candidates; source has no region labels. Actual colo is measured.",
+      "ips": [
+        "2606:4700:26:4818:d689:5e0f:f91:adda",
+        "2606:4700:26:4818:45b5:4b49:2339:c231",
+        "2606:4700:26:4818:d6f5:86d6:617b:2be0",
+        "2606:4700:26:4818:2e5b:7e04:380d:9d33",
+        "2606:4700:26:4818:2e2e:ce70:1a14:96e7",
+        "2606:4700:26:4818:2e5b:7e04:38f3:15cd",
+        "2606:4700:26:4818:2e2e:ce07:b8c1:2ef",
+        "2606:4700:26:48ec:fb3f:49cc:ea72:711f",
+        "2606:4700:26:48ec:fb3f:49cc:3b18:3fea",
+        "2606:4700:26:23b9:791a:b471:2e9a:d49f"
+      ]
+    }
+  },
+  "fallback_ips": ["104.17.145.145"]
+}
