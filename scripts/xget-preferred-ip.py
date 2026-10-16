@@ -117,7 +117,8 @@ def request(ip=None, download=False, size=SIZE, seconds=30, region=None):
             target = f'[{ip}]' if family(ip) == 6 else ip
             args += [f'--ipv{family(ip)}', '--resolve', f'{HOST}:443:{target}']
         if download:
-            args += ['--range', f'{OFFSET}-{OFFSET + size - 1}', '--max-filesize', str(size)]
+            args += ['--range', f'{OFFSET}-{OFFSET + size - 1}', '--max-filesize', str(size),
+                     '--header', 'X-Xget-Measure-Placement: 1']
         path = MODEL if download else '/cdn-cgi/trace'
         if download and region:
             path = f'/__xget/regions/{region}' + path
