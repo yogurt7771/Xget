@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-16T06:43:04+00:00",
+  "updated": "2026-10-16T07:18:32+00:00",
   "note": "Refresh before auto benchmark. Regions missing from the live feed keep their local ips. Region labels do not guarantee ingress cities.",
   "regions": {
     "HK": {
@@ -21,7 +21,7 @@
         "172.64.35.87",
         "108.162.192.57"
       ],
-      "last_refresh_utc": "2026-10-16T06:43:04+00:00"
+      "last_refresh_utc": "2026-10-16T07:18:32+00:00"
     },
     "JP": {
       "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
@@ -34,7 +34,7 @@
         "172.64.230.154",
         "172.64.231.160"
       ],
-      "last_refresh_utc": "2026-10-16T06:43:04+00:00"
+      "last_refresh_utc": "2026-10-16T07:18:32+00:00"
     },
     "TW": {
       "refresh_url": "https://raw.githubusercontent.com/gslege/CloudflareIP/main/country.txt",
@@ -59,7 +59,8 @@
         "2606:4700:26:48ec:fb3f:49cc:ea72:711f",
         "2606:4700:26:48ec:fb3f:49cc:3b18:3fea",
         "2606:4700:26:23b9:791a:b471:2e9a:d49f"
-      ]
+      ],
+      "last_refresh_utc": "2026-10-16T07:18:32+00:00"
     }
   },
   "fallback_ips": ["104.17.145.145"]

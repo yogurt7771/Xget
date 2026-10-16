@@ -6,6 +6,7 @@ import datetime
 import hashlib
 import ipaddress
 import json
+import os
 import re
 import socket
 import statistics
@@ -408,7 +409,12 @@ def worker_status():
 
 
 def gh(*arguments):
-    result = subprocess.run(['gh', *arguments], capture_output=True, timeout=45)
+    child_env = os.environ.copy()
+    # Python isolates XDG_CONFIG_HOME; gh uses the existing Windows login.
+    # The launcher preserves any explicitly configured gh/XDG directory.
+    if not child_env.get('GH_CONFIG_DIR'):
+        child_env.pop('XDG_CONFIG_HOME', None)
+    result = subprocess.run(['gh', *arguments], capture_output=True, timeout=45, env=child_env)
     if result.returncode:
         raise RuntimeError('GitHub deployment failed: ' + result.stderr.decode(errors='replace').strip())
     return result.stdout.decode('utf-8')
@@ -443,6 +449,20 @@ def deploy_region(region):
     raise RuntimeError('Worker selection deployment timed out; check GitHub Actions before retrying')
 
 
+def verify_worker(region, ip, expected_exit, expected_hash):
+    for attempt in range(6):
+        verified = probe(exit_ip=expected_exit)
+        if (verified['sha256'] != expected_hash or
+                normalize_ip(verified['connected_ip']) != normalize_ip(ip)):
+            raise RuntimeError('Default Worker content or connection verification failed')
+        if verified['worker_region'] == region:
+            return verified
+        if attempt < 5:
+            emit({'worker_wait': region, 'observed_region': verified['worker_region']})
+            time.sleep(5)
+    raise RuntimeError('Default Worker region did not converge after deployment')
+
+
 def select_worker(ip, expected_exit, expected_hash, dry_run=False):
     previous = worker_status()['active_region']
     regions = [previous] + [region for region in WORKER_REGIONS if region != previous]
@@ -471,14 +491,12 @@ def select_worker(ip, expected_exit, expected_hash, dry_run=False):
     try:
         if chosen != previous:
             deploy_region(chosen)
-        verified = probe(exit_ip=expected_exit)
-        if (verified['worker_region'] != chosen or verified['sha256'] != expected_hash or
-                normalize_ip(verified['connected_ip']) != normalize_ip(ip)):
-            raise RuntimeError('Default Worker verification failed')
+        verified = verify_worker(chosen, ip, expected_exit, expected_hash)
         emit({'verified': verified})
     except Exception:
         if chosen != previous:
             deploy_region(previous)
+            verify_worker(previous, ip, expected_exit, expected_hash)
             emit({'worker_restored': previous})
         raise
     return chosen

@@ -3,6 +3,11 @@ $utf8 = New-Object System.Text.UTF8Encoding($false)
 [Console]::OutputEncoding = $utf8
 $OutputEncoding = $utf8
 $env:PYTHONIOENCODING = 'utf-8'
+# Keep gh's existing login while Python isolates its own configuration.
+if (-not $env:GH_CONFIG_DIR) {
+    if ($env:XDG_CONFIG_HOME) { $env:GH_CONFIG_DIR = Join-Path $env:XDG_CONFIG_HOME 'gh' }
+    elseif ($env:APPDATA) { $env:GH_CONFIG_DIR = Join-Path $env:APPDATA 'GitHub CLI' }
+}
 $pythonPath = 'C:\Users\yogur\Documents\Codex\.codex-python-env\Scripts\python.exe'
 $enginePath = Join-Path $PSScriptRoot 'xget-preferred-ip.py'
 
@@ -39,6 +44,8 @@ function Show-XgetEvent($event) {
     } elseif ($event.worker_deploy) {
         Write-Host ('[部署默认地区] {0}：{1} {2}' -f (Get-RegionName $event.worker_deploy), $event.status, $event.conclusion)
         if ($event.url) { Write-Host $event.url }
+    } elseif ($event.worker_wait) {
+        Write-Host ('[等待部署传播] 目标 {0}，当前请求仍使用 {1}，稍后复验。' -f (Get-RegionName $event.worker_wait), (Get-RegionName $event.observed_region))
     } elseif ($event.worker_restored) {
         Write-Host ('[恢复默认地区] {0}' -f (Get-RegionName $event.worker_restored)) -ForegroundColor Yellow
     } elseif ($event.stage -eq 'refresh') {
