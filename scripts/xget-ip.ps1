@@ -5,4 +5,4 @@ if (-not (Test-Path -LiteralPath $entry)) {
     $null = Read-Host '按回车关闭'
     exit 1
 }
-& $entry -InitialService 'xget'
+& $entry

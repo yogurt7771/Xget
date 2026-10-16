@@ -4,8 +4,8 @@
 Drive 共用测速、候选刷新和回滚逻辑。
 
 双击 `scripts/xget-ip.cmd` 或
-`scripts/xget-auto-ip.cmd`，仍直接进入 Xget 的中文菜单，无需参数。也可双击上级独立项目中的
-`优选IP.cmd`，交互选择服务。
+`scripts/xget-auto-ip.cmd`，进入全部服务的同步优选菜单，无需参数。也可双击上级独立项目中的
+`优选IP.cmd`，直接同步全部服务，无需选择服务。
 
 完整说明见
 [统一工具 README](../../Cloudflare-Preferred-IP/README.md)。候选在独立项目的
@@ -19,9 +19,9 @@ Drive 共用测速、候选刷新和回滚逻辑。
 和 `scripts/worker-regions.json`，独立工具不复制业务代码或部署密钥。
 
 四个 Worker 为 `xget-hk`、`xget-sg`、`xget-jp`、`xget-tw`，统一入口为
-`xget`。默认地区通过 fork 的 GitHub Actions 切换，正常 `/hf/...`
-地址不变。`/__xget/status` 查看默认地区；`/__xget/regions/{hk|sg|jp|tw}/hf/...`
-指定测试地区。
+`xget`。统一工具联合测速后同步各服务的默认地区，Xget 通过 fork 的 GitHub
+Actions 切换，正常 `/hf/...` 地址不变。`/__xget/status`
+查看默认地区；`/__xget/regions/{hk|sg|jp|tw}/hf/...` 指定测试地区。
 
 部署提示：香港 `aws:ap-east-1`、新加坡 `aws:ap-southeast-1`、日本
 `gcp:asia-northeast1`、台湾 `gcp:asia-east1`。测速时核对 Worker
