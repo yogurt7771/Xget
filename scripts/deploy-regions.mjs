@@ -16,11 +16,20 @@ if (process.env.INSPECT_ONLY === 'true') {
     if (!response.ok) throw new Error(`Cannot inspect ${name}: ${response.status}`);
     const data = await response.json();
     if (!data.success) throw new Error(`Cannot inspect ${name}`);
+    const serviceResponse = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${account}/workers/services/${name}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!serviceResponse.ok)
+      throw new Error(`Cannot inspect ${name} status: ${serviceResponse.status}`);
+    const service = await serviceResponse.json();
+    if (!service.success) throw new Error(`Cannot inspect ${name} status`);
     // Only emit placement and our routing variables, never credentials or all bindings.
     console.log(
       JSON.stringify({
         worker: name,
         placement: data.result.placement ?? null,
+        placement_status: service.result.default_environment?.script?.placement ?? null,
         routing: data.result.bindings
           ?.filter(binding => ['ACTIVE_REGION', 'WORKER_REGION'].includes(binding.name))
           .map(binding => ({ name: binding.name, value: binding.text }))

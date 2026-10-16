@@ -1,6 +1,6 @@
 {
   "hk": { "label": "香港", "placement": "aws:ap-east-1", "colos": ["HKG"] },
   "sg": { "label": "新加坡", "placement": "aws:ap-southeast-1", "colos": ["SIN"] },
-  "jp": { "label": "日本", "placement": "aws:ap-northeast-1", "colos": ["NRT", "HND", "KIX", "FUK", "OKA"] },
+  "jp": { "label": "日本", "placement": "gcp:asia-northeast1", "colos": ["NRT", "HND", "KIX", "FUK", "OKA"] },
   "tw": { "label": "台湾", "placement": "gcp:asia-east1", "colos": ["TPE", "KHH"] }
 }

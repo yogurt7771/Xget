@@ -34,7 +34,7 @@ token。IPv4 和 IPv6 的公网出口地址本来就不同，因此分别建立 
 
 地区配置保存在 `scripts/worker-regions.json`。使用 Cloudflare
 Placement 的区域提示：香港 `aws:ap-east-1`、新加坡 `aws:ap-southeast-1`、日本
-`aws:ap-northeast-1`、台湾
+`gcp:asia-northeast1`、台湾
 `gcp:asia-east1`。提示指定靠近该云区域的 Cloudflare 执行位置；测速请求让目标 Worker 向 Cloudflare
 trace 发起子请求，以返回的出站数据中心核对地区（`trace-HKG`
 等）；日常下载不增加这次探测。它观察的是 Worker 出站位置，不是用户入口城市，不能只凭配置名称认定地区。
