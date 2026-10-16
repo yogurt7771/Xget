@@ -18,6 +18,10 @@ on:
         description: Deploy all four regional Workers
         type: boolean
         default: true
+      inspect_only:
+        description: Read live placement settings without deploying
+        type: boolean
+        default: false
       request_id:
         description: Client request identifier
         required: false
@@ -55,5 +59,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ACTIVE_REGION: ${{ inputs.active_region }}
+          INSPECT_ONLY: ${{ inputs.inspect_only }}
           DEPLOY_ALL: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_all == false && 'false' || 'true' }}
         run: node scripts/deploy-regions.mjs
